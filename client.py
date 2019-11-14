@@ -12,7 +12,7 @@ def sign_in_out(id: int) -> bool:
         os.remove('data/sessions/' + str(id))
         return False
     except: # Create a new sessionfile
-        with open('data/sessions/' + str(id), 'w+') as sessionfile:
+        with open('data/sessions/' + str(id), 'x') as sessionfile:
             sessionfile.write(str(timestamp))
         return True
 
