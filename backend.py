@@ -1,3 +1,13 @@
 # TODO: this will be completed once the backend is built
 # This makes backend act as a passthrough
-from dummy_backend import *
+import dummy_backend
+import queue
+
+def get_name(id: int) -> str:
+    return dummy_backend.get_name(id)
+
+def create_user(id: int, name: str) -> str:
+    return dummy_backend.create_user(id, name)
+
+def submit(id: int, start: int, end: int):
+    dummy_backend.submit(id, start, end)
