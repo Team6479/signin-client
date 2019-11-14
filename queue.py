@@ -1,11 +1,15 @@
+import json
+
+def get():
+    with open('data/queue', 'r') as queuefile:
+        return json.loads(queuefile.read())
+
 def add(id: int, start: int, end: int):
-    entries = []
-    with open('data/queue', 'r') as entryfile:
-        entries = json.loads(entryfile.read())
+    with open('data/queue', 'w') as queuefile:
+        entries = get()
         entries['entries'].append({
             'id': id,
             'start': start,
             'end': end
         })
-    with open('data/queue', 'w') as entryfile:
-        json.dump(entries, entryfile)
+        json.dump(entries, queuefile)
