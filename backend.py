@@ -1,5 +1,3 @@
-# TODO: this will be completed once the backend is built
-# This makes backend act as a passthrough
 import squeue
 import server
 import json
@@ -19,3 +17,4 @@ def submit(id: int, start: int, end: int):
 
 def push():
     server.push_many(squeue.get())
+    squeue.clear()

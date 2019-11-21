@@ -13,3 +13,7 @@ def add(id: int, start: int, end: int):
             'end': end
         })
         json.dump(entries, queuefile)
+
+def clear():
+    with open('data/queue', 'w') as queuefile:
+        queuefile.write('[]')
