@@ -21,7 +21,9 @@ while True:
     if cmd == '.': # Push
         backend.push()
     elif cmd == '..': # Sign out all users, push, and exit
-        # TODO: sign out all users
+        for id in os.listdir('data/sessions'):
+            sign_in_out(int(id))
+            print(id + ' has been signed out.')
         backend.push()
         break
     elif cmd == '...': # Exit
