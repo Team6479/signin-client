@@ -19,7 +19,8 @@ def sign_in_out(id: int) -> bool:
 while True:
     cmd: str = input('Please scan your ID card or enter your student number: ')
     if cmd == '..':
-        # TODO: sign out all users and force the queue to push
+        # TODO: sign out all users
+        backend.push()
         break
     else: # the number should be handled as an ID
         try:
@@ -31,7 +32,8 @@ while True:
                 else:
                     print('Goodbye, ' + name + '.')
             else:
-                name = backend.create_user(id, input('This appears to be your first time signing in. Please enter your name: '))
+                name = input('This appears to be your first time signing in. Please enter your name: ')
+                backend.create_user(id, name)
                 sign_in_out(id)
                 print('Welcome, ' + name + '.')
         except:
