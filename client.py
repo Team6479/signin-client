@@ -18,9 +18,13 @@ def sign_in_out(id: int) -> bool:
 
 while True:
     cmd: str = input('Please scan your ID card or enter your student number: ')
-    if cmd == '..':
+    if cmd == '.': # Push
+        backend.push()
+    elif cmd == '..': # Sign out all users, push, and exit
         # TODO: sign out all users
         backend.push()
+        break
+    elif cmd == '...': # Exit
         break
     else: # the number should be handled as an ID
         try:
