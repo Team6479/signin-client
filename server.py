@@ -3,7 +3,7 @@
 import requests
 
 with open('data/api_key', 'r') as keyfile:
-    API_KEY = keyfile.read()
+    API_KEY = str.strip(keyfile.read())
 
 def req(endpoint: str, data, server: str = 'https://team6479-signin.herokuapp.com'):
     return requests.post(url = server + endpoint, data = data)
