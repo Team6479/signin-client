@@ -44,3 +44,5 @@ while True:
                 print('Welcome, ' + name + '.')
         except:
             print('Invalid ID or command.')
+    time.sleep(1)
+    os.system('clear')
