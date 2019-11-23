@@ -31,18 +31,19 @@ while True:
     else: # the number should be handled as an ID
         try:
             id: int = int(cmd)
-            name = backend.get_name(id)
-            if name:
-                if sign_in_out(id):
-                    print('Welcome, ' + name + '.')
-                else:
-                    print('Goodbye, ' + name + '.')
-            else:
-                name = input('This appears to be your first time signing in. Please enter your name: ')
-                backend.create_user(id, name)
-                sign_in_out(id)
-                print('Welcome, ' + name + '.')
         except:
             print('Invalid ID or command.')
+            continue
+        name = backend.get_name(id)
+        if name:
+            if sign_in_out(id):
+                print('Welcome, ' + name + '.')
+            else:
+                print('Goodbye, ' + name + '.')
+        else:
+            name = input('This appears to be your first time signing in. Please enter your name: ')
+            backend.create_user(id, name)
+            sign_in_out(id)
+            print('Welcome, ' + name + '.')
     time.sleep(1)
     os.system('clear')
