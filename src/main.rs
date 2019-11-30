@@ -1,5 +1,5 @@
 use cursive::Cursive;
-use cursive::views::{Dialog, TextView, EditView};
+use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout};
 use cursive::traits::*;
 
 use regex::Regex;
@@ -8,11 +8,12 @@ use chrono::{offset, Datelike};
 fn main() {
     let mut tui = Cursive::default();
 
-    tui.add_global_callback('q', |s| s.quit());
-
-    tui.add_layer(Dialog::around(TextView::new("Hello, World!"))
-        .title("Test")
-        .button("Sign In/Out", signin_dialogue));
+    tui.add_layer(Dialog::around(LinearLayout::vertical()
+            .child(Button::new("Sign In", signin_dialogue))
+            .child(Button::new("Sign Out", signout_dialogue))
+            .child(DummyView)
+            .child(Button::new("Admin", |s| s.quit())))
+        .title("Options"));
     
     tui.run();
 }
@@ -31,7 +32,27 @@ fn signin_dialogue(s: &mut Cursive) {
                         }));
                 }
             }))
-        .title("Enter or scan your ID")
+        .title("Enter or scan your ID to sign in")
+        .button("Cancel", |s| {
+            s.pop_layer();
+        }));
+}
+
+fn signout_dialogue(s: &mut Cursive) {
+    s.add_layer(Dialog::around(EditView::new()
+            //.fixed_width(10)
+            .on_submit(|s, text| {
+                if validate_id(&text) {
+                    // TODO: do something with the ID
+                } else {
+                    s.add_layer(Dialog::around(TextView::new("Please use your student ID number."))
+                        .title("Invalid ID")
+                        .button("Ok", |s| {
+                            s.pop_layer();
+                        }));
+                }
+            }))
+        .title("Enter or scan your ID to sign out")
         .button("Cancel", |s| {
             s.pop_layer();
         }));
