@@ -9,8 +9,8 @@ fn main() {
     let mut tui = Cursive::default();
 
     tui.add_layer(Dialog::around(LinearLayout::vertical()
-            .child(Button::new("Sign In", signin_dialogue))
-            .child(Button::new("Sign Out", signout_dialogue))
+            .child(Button::new("Sign In", signin_dialog))
+            .child(Button::new("Sign Out", signout_dialog))
             .child(DummyView)
             .child(Button::new("Admin", |s| s.quit())))
         .title("Options"));
@@ -18,7 +18,7 @@ fn main() {
     tui.run();
 }
 
-fn signin_dialogue(s: &mut Cursive) {
+fn signin_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
             .on_submit(|s, text| {
                 if validate_id(&text) {
@@ -37,7 +37,7 @@ fn signin_dialogue(s: &mut Cursive) {
         }));
 }
 
-fn signout_dialogue(s: &mut Cursive) {
+fn signout_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
             .on_submit(|s, text| {
                 if validate_id(&text) {
