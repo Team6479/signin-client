@@ -20,7 +20,6 @@ fn main() {
 
 fn signin_dialogue(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
-            //.fixed_width(10)
             .on_submit(|s, text| {
                 if validate_id(&text) {
                     // TODO: do something with the ID
@@ -40,7 +39,6 @@ fn signin_dialogue(s: &mut Cursive) {
 
 fn signout_dialogue(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
-            //.fixed_width(10)
             .on_submit(|s, text| {
                 if validate_id(&text) {
                     // TODO: do something with the ID
