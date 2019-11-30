@@ -5,6 +5,8 @@ use cursive::traits::*;
 use regex::Regex;
 use chrono::{offset, Datelike};
 
+mod cache;
+
 fn main() {
     let mut tui = Cursive::default();
 
