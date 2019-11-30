@@ -1,3 +1,5 @@
+#![allow(unused_must_use)]
+
 use cursive::Cursive;
 use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout};
 use cursive::traits::*;
