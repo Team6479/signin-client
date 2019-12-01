@@ -5,12 +5,12 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::fs;
 
-fn cfg_dir() -> PathBuf { // all methods here are relative to the cache directory
-    ProjectDirs::from("org", "team6479",  "signin").unwrap().config_dir().to_path_buf()
+fn cache_dir() -> PathBuf { // all methods here are relative to the cache directory
+    ProjectDirs::from("org", "team6479",  "signin").unwrap().cache_dir().to_path_buf()
 }
 
 fn append(fname: &str, contents: &str) {
-    let mut fpath = cfg_dir();
+    let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
     let mut file = OpenOptions::new()
         .append(true)
@@ -21,7 +21,7 @@ fn append(fname: &str, contents: &str) {
 }
 
 fn create(fname: &str, contents: &str) {
-    let mut fpath = cfg_dir();
+    let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
     let mut file = OpenOptions::new()
         .write(true)
@@ -32,13 +32,13 @@ fn create(fname: &str, contents: &str) {
 }
 
 fn del(fname: &str) {
-    let mut fpath = cfg_dir();
+    let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
     fs::remove_file(&fpath.as_path());
 }
 
 fn clear(fname: &str) {
-    let mut fpath = cfg_dir();
+    let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
     let mut file = OpenOptions::new()
         .write(true)
@@ -49,13 +49,13 @@ fn clear(fname: &str) {
 }
 
 fn exists(fname: &str) -> bool {
-    let mut fpath = cfg_dir();
+    let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
     Path::new(&fpath.as_path()).exists()
 }
 
 fn read(fname: &str) -> String {
-    let mut fpath = cfg_dir();
+    let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
     let file = OpenOptions::new()
         .write(true)
@@ -66,6 +66,10 @@ fn read(fname: &str) -> String {
     let mut contents = String::new();
     buf_reader.read_to_string(&mut contents);
     contents
+}
+
+pub fn init() {
+    fs::create_dir_all(cache_dir());
 }
 
 pub fn is_signed_in(id: &str) -> bool {
