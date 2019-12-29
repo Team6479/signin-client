@@ -69,7 +69,9 @@ fn read(fname: &str) -> String {
 }
 
 pub fn init() {
-    fs::create_dir_all(cache_dir());
+    let mut sess_path = cache_dir();
+    sess_path.push(Path::new("sess"));
+    fs::create_dir_all(sess_path);
 }
 
 pub fn is_signed_in(id: &str) -> bool {

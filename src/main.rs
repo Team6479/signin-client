@@ -6,10 +6,13 @@ use cursive::traits::*;
 
 use regex::Regex;
 use chrono::{offset, Datelike};
+use std::convert::TryInto;
 
 mod cache;
 
 fn main() {
+    cache::init();
+
     let mut tui = Cursive::default();
 
     tui.add_layer(Dialog::around(LinearLayout::vertical()
@@ -24,9 +27,29 @@ fn main() {
 
 fn signin_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
-            .on_submit(|s, text| {
-                if validate_id(&text) {
-                    // TODO: do something with the ID
+            .on_submit(|s, id| {
+                if validate_id(&id) {
+                    if cache::is_signed_in(&id) {
+                        s.pop_layer();
+                        s.add_layer(Dialog::around(TextView::new(format!("Users cannot sign in twice. Sign out?")))
+                            .title("Already signed in")
+                            .button("No", |s| {
+                                s.pop_layer();
+                            })
+                            .button("Yes", |s| {
+                                s.pop_layer();
+                                signout_dialog(s);
+                            }));
+                    } else {
+                        // note: this code will break if the user time travels before the Epoch
+                        cache::mk_sess(&id, offset::Local::now().timestamp().try_into().unwrap());
+                        s.pop_layer();
+                        s.add_layer(Dialog::around(TextView::new(format!("Welcome, {}", "name")))
+                            .title("Successfully signed in")
+                            .button("Ok", |s| {
+                                s.pop_layer();
+                            }));
+                    }
                 } else {
                     s.add_layer(Dialog::around(TextView::new("Please use your student ID number."))
                         .title("Invalid ID")
@@ -43,9 +66,13 @@ fn signin_dialog(s: &mut Cursive) {
 
 fn signout_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
-            .on_submit(|s, text| {
-                if validate_id(&text) {
-                    // TODO: do something with the ID
+            .on_submit(|s, id| {
+                if validate_id(&id) {
+                    if cache::is_signed_in(&id) {
+                        // TODO: sign out
+                    } else {
+                        // TODO: user should be signed in
+                    }
                 } else {
                     s.add_layer(Dialog::around(TextView::new("Please use your student ID number."))
                         .title("Invalid ID")
