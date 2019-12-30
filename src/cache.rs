@@ -103,9 +103,22 @@ pub mod user {
         validate_id(id)
     }
 
-    // checks if a user could be created unsuspiciously based on a requested ID number
+    pub enum Creatability {
+        Unobstructed, // user can be created according to the normal processes without suspicion
+        Privileged, // user can be created, but requires administrative approval due to suspicious parameters
+        Impossible, // user cannot be created
+    }
+    // checks the creatability of a user (i.e. if the ) based on a requested ID number
+    pub fn is_creatable(id: &str) -> Creatability {
+        if validate_id(id) {
+            Creatability::Unobstructed
+        } else {
+            Creatability::Privileged
+        }
+    }
+
     // this method is somewhat convoluted; it is commented as best I could, but I recommend using regexr.com and a whiteboard
-    pub fn validate_id(id: &str) -> bool {
+    fn validate_id(id: &str) -> bool {
         let current_yy= offset::Local::today().year() % 100; // 19, if the current year is 2019
         let min_yy = current_yy - 1; // allows superseniors in second semester
         let max_yy = current_yy + 4; // allows freshman in first semester
