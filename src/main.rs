@@ -44,6 +44,7 @@ fn signin_dialog(s: &mut Cursive) {
                         // note: this code will break if the user time travels before the Epoch
                         sess::mk_sess(&id, offset::Local::now().timestamp().try_into().unwrap());
                         s.pop_layer();
+                        // TODO: name
                         s.add_layer(Dialog::around(TextView::new(format!("Welcome, {}", "name")))
                             .title("Successfully signed in")
                             .button("Ok", |s| {
@@ -71,7 +72,16 @@ fn signout_dialog(s: &mut Cursive) {
                     if sess::is_signed_in(&id) {
                         // TODO: sign out
                     } else {
-                        // TODO: user should be signed in
+                        s.pop_layer();
+                        s.add_layer(Dialog::around(TextView::new(format!("Users cannot sign out before signing in. Sign in?")))
+                            .title("Net signed in")
+                            .button("No", |s| {
+                                s.pop_layer();
+                            })
+                            .button("Yes", |s| {
+                                s.pop_layer();
+                                signin_dialog(s);
+                            }));
                     }
                 } else {
                     s.add_layer(Dialog::around(TextView::new("Please use your student ID number."))
