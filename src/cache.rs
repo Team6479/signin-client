@@ -93,3 +93,30 @@ pub mod sess {
         start
     }
 }
+
+pub mod user {
+    use chrono::{offset, Datelike};
+    use regex::Regex;
+
+    // checks if actions (e.g. signin) can be performed upon a theoretical user with the given ID
+    pub fn is_actionable(id: &str) -> bool {
+        validate_id(id)
+    }
+
+    // checks if a user could be created unsuspiciously based on a requested ID number
+    // this method is somewhat convoluted; it is commented as best I could, but I recommend using regexr.com and a whiteboard
+    pub fn validate_id(id: &str) -> bool {
+        let current_yy= offset::Local::today().year() % 100; // 19, if the current year is 2019
+        let min_yy = current_yy - 1; // allows superseniors in second semester
+        let max_yy = current_yy + 4; // allows freshman in first semester
+        let grad_yr_regex = if min_yy / 10 == max_yy / 10 { // same decade
+            format!("{}[{}-{}]", (min_yy / 10), (min_yy % 10), (max_yy % 10))
+        } else { // different decades
+            format!("(?:{}[{}-9])|(?:{}[0-{}])", (min_yy / 10), (min_yy % 10), (max_yy / 10), (max_yy % 10))
+        };
+        let mid_regex = "[0-9]{3}"; // TODO: figure out what's valid here (I've been told that it's usually 400)
+        let end_regex = "[0-9]{3}"; // these numbers appear to be random
+        let re = Regex::new(&format!("{}{}{}", &grad_yr_regex, &mid_regex, &end_regex)).unwrap();
+        re.is_match(id)
+    }
+}
