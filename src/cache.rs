@@ -5,6 +5,8 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use std::fs;
 
+use std::collections::HashMap;
+
 fn cache_dir() -> PathBuf { // all methods here are relative to the cache directory
     ProjectDirs::from("org", "team6479",  "signin").unwrap().cache_dir().to_path_buf()
 }
@@ -74,22 +76,68 @@ fn read(fname: &str) -> String {
     contents
 }
 
+pub struct ApiPostRequest {
+    endpt: String, // an API endpoint such as /get/user
+    body: String, // this should not contain an API key
+}
+
+pub trait Pushable {
+    fn get_post_req(&self) -> ApiPostRequest;
+}
+
+pub trait Pullable {
+    fn get_post_req(&self) -> ApiPostRequest;
+    fn callback(resp: HashMap<String, String>);
+}
+
+pub trait Cacheable {
+    fn serialize(&self) -> String;
+    fn deserialize(serialized: &str) -> Self;
+}
+
 pub mod sess {
+    struct Session {
+        id: String,
+        start: u64,
+        end: u64,
+    }
+    impl super::Cacheable for Session {
+        fn serialize(&self) -> String {
+            format!("{},{},{}", self.id, self.start, self.end)
+        }
+        fn deserialize(serialized: &str) -> Session { // this MUST receive well-structured data
+            let data: Vec<&str> = serialized.split(",").collect();
+            Session {
+                id: data[0].to_owned(),
+                start: data[1].parse().unwrap(),
+                end: data[2].parse().unwrap(),
+            }
+        }
+    }
+    impl super::Pushable for Session {
+        fn get_post_req(&self) -> super::ApiPostRequest {
+            super::ApiPostRequest {
+                endpt: String::from("/put/entry"),
+                body: format!("id={}&start={}&end={}", self.id, self.start, self.end),
+            }
+        }
+    }
+
     pub fn is_signed_in(id: &str) -> bool {
-        super::exists(&format!("sess/{}", id))
+        super::exists(&format!("sess/active/{}", id))
     }
     
     pub fn mk_sess(id: &str, start: u64) {
-        super::create(&format!("sess/{}", id), &format!("{}", start));
+        super::create(&format!("sess/active/{}", id), &format!("{}", start));
     }
     
     pub fn get_sess_start(id: &str) -> u64 {
-        super::read(&format!("sess/{}", id)).parse::<u64>().unwrap()
+        super::read(&format!("sess/active/{}", id)).parse::<u64>().unwrap()
     }
     
     pub fn rm_and_get_sess(id: &str) -> u64 {
         let start = get_sess_start(&id);
-        super::del(&format!("sess/{}", id));
+        super::del(&format!("sess/active/{}", id));
         start
     }
 }
