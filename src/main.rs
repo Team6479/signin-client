@@ -2,7 +2,6 @@
 
 use cursive::Cursive;
 use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout};
-use cursive::traits::*;
 
 use chrono::offset;
 use std::convert::TryInto;
