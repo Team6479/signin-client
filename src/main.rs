@@ -9,6 +9,7 @@ use chrono::{offset, Datelike};
 use std::convert::TryInto;
 
 mod cache;
+use cache::sess;
 
 fn main() {
     cache::init();
@@ -29,7 +30,7 @@ fn signin_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
             .on_submit(|s, id| {
                 if validate_id(&id) {
-                    if cache::is_signed_in(&id) {
+                    if sess::is_signed_in(&id) {
                         s.pop_layer();
                         s.add_layer(Dialog::around(TextView::new(format!("Users cannot sign in twice. Sign out?")))
                             .title("Already signed in")
@@ -42,7 +43,7 @@ fn signin_dialog(s: &mut Cursive) {
                             }));
                     } else {
                         // note: this code will break if the user time travels before the Epoch
-                        cache::mk_sess(&id, offset::Local::now().timestamp().try_into().unwrap());
+                        sess::mk_sess(&id, offset::Local::now().timestamp().try_into().unwrap());
                         s.pop_layer();
                         s.add_layer(Dialog::around(TextView::new(format!("Welcome, {}", "name")))
                             .title("Successfully signed in")
@@ -68,7 +69,7 @@ fn signout_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
             .on_submit(|s, id| {
                 if validate_id(&id) {
-                    if cache::is_signed_in(&id) {
+                    if sess::is_signed_in(&id) {
                         // TODO: sign out
                     } else {
                         // TODO: user should be signed in

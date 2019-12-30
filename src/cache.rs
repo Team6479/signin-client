@@ -9,6 +9,12 @@ fn cache_dir() -> PathBuf { // all methods here are relative to the cache direct
     ProjectDirs::from("org", "team6479",  "signin").unwrap().cache_dir().to_path_buf()
 }
 
+pub fn init() {
+    let mut sess_path = cache_dir();
+    sess_path.push(Path::new("sess"));
+    fs::create_dir_all(sess_path);
+}
+
 fn append(fname: &str, contents: &str) {
     let mut fpath = cache_dir();
     fpath.push(Path::new(fname));
@@ -68,26 +74,22 @@ fn read(fname: &str) -> String {
     contents
 }
 
-pub fn init() {
-    let mut sess_path = cache_dir();
-    sess_path.push(Path::new("sess"));
-    fs::create_dir_all(sess_path);
-}
-
-pub fn is_signed_in(id: &str) -> bool {
-    exists(&format!("sess/{}", id))
-}
-
-pub fn mk_sess(id: &str, start: u64) {
-    create(&format!("sess/{}", id), &format!("{}", start));
-}
-
-pub fn get_sess_start(id: &str) -> u64 {
-    read(&format!("sess/{}", id)).parse::<u64>().unwrap()
-}
-
-pub fn rm_and_get_sess(id: &str) -> u64 {
-    let start = get_sess_start(&id);
-    del(&format!("sess/{}", id));
-    start
+pub mod sess {
+    pub fn is_signed_in(id: &str) -> bool {
+        super::exists(&format!("sess/{}", id))
+    }
+    
+    pub fn mk_sess(id: &str, start: u64) {
+        super::create(&format!("sess/{}", id), &format!("{}", start));
+    }
+    
+    pub fn get_sess_start(id: &str) -> u64 {
+        super::read(&format!("sess/{}", id)).parse::<u64>().unwrap()
+    }
+    
+    pub fn rm_and_get_sess(id: &str) -> u64 {
+        let start = get_sess_start(&id);
+        super::del(&format!("sess/{}", id));
+        start
+    }
 }
