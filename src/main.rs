@@ -3,11 +3,8 @@
 use cursive::Cursive;
 use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout};
 
-use chrono::offset;
-use std::convert::TryInto;
-
 mod util;
-use util::{sess, user};
+use util::{time, sess, user, traits::*};
 
 fn main() {
     util::init();
@@ -41,7 +38,7 @@ fn signin_dialog(s: &mut Cursive) {
                             }));
                     } else {
                         // note: this code will break if the user time travels before the Epoch
-                        sess::mk_sess(&id, offset::Local::now().timestamp().try_into().unwrap());
+                        sess::mk_sess(&id, time::get_time());
                         s.pop_layer();
                         // TODO: name
                         s.add_layer(Dialog::around(TextView::new(format!("Welcome, {}", "name")))
@@ -69,7 +66,18 @@ fn signout_dialog(s: &mut Cursive) {
             .on_submit(|s, id| {
                 if user::is_actionable(&id) {
                     if sess::is_signed_in(&id) {
-                        // TODO: sign out
+                        let completed = sess::Session {
+                            id: id.to_owned(),
+                            start: sess::rm_and_get_sess(id),
+                            end: time::get_time(),
+                        };
+                        completed.cache(); // creates and caches a completed session
+                        // TODO: name
+                        s.add_layer(Dialog::around(TextView::new(format!("Goodbye, {}\n\n{}", "name", (completed.end - completed.start))))
+                            .title("Successfully signed out")
+                            .button("Ok", |s| {
+                                s.pop_layer();
+                            }));
                     } else {
                         s.pop_layer();
                         s.add_layer(Dialog::around(TextView::new(format!("Users cannot sign out before signing in. Sign in?")))

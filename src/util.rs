@@ -1,12 +1,23 @@
 use std::fs;
 use std::path::Path;
 
-use std::collections::HashMap;
-
 pub fn init() { // all code in this file may rely on the fact that this function has been executed
     let mut sess_path = cache::cache_dir();
-    sess_path.push(Path::new("sess"));
+    sess_path.push(Path::new("sess/active"));
     fs::create_dir_all(sess_path);
+
+    let mut user_path = cache::cache_dir();
+    user_path.push(Path::new("user"));
+    fs::create_dir_all(user_path);
+}
+
+pub mod time {
+    use chrono::offset;
+    use std::convert::TryInto;
+
+    pub fn get_time() -> u64 {
+        offset::Local::now().timestamp().try_into().unwrap()
+    }
 }
 
 mod cache {
@@ -70,8 +81,7 @@ mod cache {
         let mut fpath = cache_dir();
         fpath.push(Path::new(fname));
         let file = OpenOptions::new()
-            .write(true)
-            .create(true)
+            .read(true)
             .open(&fpath.as_path())
             .unwrap();
         let mut buf_reader = BufReader::new(file);
@@ -81,34 +91,40 @@ mod cache {
     }
 }
 
-pub struct ApiPostRequest {
-    endpt: String, // an API endpoint such as /get/user
-    body: String, // this should not contain an API key
-}
+pub mod traits {
+    use std::collections::HashMap;
 
-pub trait Pushable {
-    fn get_post_req(&self) -> ApiPostRequest;
-}
-
-pub trait Pullable {
-    fn get_post_req(&self) -> ApiPostRequest;
-    fn callback(resp: HashMap<String, String>);
-}
-
-pub trait Cacheable {
-    fn serialize(&self) -> String;
-    fn deserialize(serialized: &str) -> Self;
+    pub struct ApiPostRequest {
+        pub endpt: String, // an API endpoint such as /get/user
+        pub body: String, // this should not contain an API key
+    }
+    
+    pub trait Pushable {
+        fn get_post_req(&self) -> ApiPostRequest;
+    }
+    
+    pub trait Pullable {
+        fn get_post_req(&self) -> ApiPostRequest;
+        fn callback(resp: HashMap<String, String>);
+    }
+    
+    pub trait Cacheable {
+        fn serialize(&self) -> String;
+        fn deserialize(serialized: &str) -> Self;
+        fn cache(&self);
+    }
 }
 
 pub mod sess {
     use super::cache;
+    use super::traits::*;
 
-    struct Session {
-        id: String,
-        start: u64,
-        end: u64,
+    pub struct Session {
+        pub id: String,
+        pub start: u64,
+        pub end: u64,
     }
-    impl super::Cacheable for Session {
+    impl Cacheable for Session {
         fn serialize(&self) -> String {
             format!("{},{},{}", self.id, self.start, self.end)
         }
@@ -120,10 +136,13 @@ pub mod sess {
                 end: data[2].parse().unwrap(),
             }
         }
+        fn cache(&self) {
+            cache::append("sess/queue", &self.serialize());
+        }
     }
-    impl super::Pushable for Session {
-        fn get_post_req(&self) -> super::ApiPostRequest {
-            super::ApiPostRequest {
+    impl Pushable for Session {
+        fn get_post_req(&self) -> ApiPostRequest {
+            ApiPostRequest {
                 endpt: String::from("/put/entry"),
                 body: format!("id={}&start={}&end={}", self.id, self.start, self.end),
             }
@@ -139,7 +158,7 @@ pub mod sess {
     }
     
     pub fn get_sess_start(id: &str) -> u64 {
-        cache::read(&format!("sess/active/{}", id)).parse::<u64>().unwrap()
+        cache::read(&format!("sess/active/{}", id)).trim().parse::<u64>().unwrap()
     }
     
     pub fn rm_and_get_sess(id: &str) -> u64 {
