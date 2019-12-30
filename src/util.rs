@@ -1,79 +1,84 @@
-use directories::ProjectDirs;
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::io::BufReader;
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::path::Path;
 
 use std::collections::HashMap;
 
-fn cache_dir() -> PathBuf { // all methods here are relative to the cache directory
-    ProjectDirs::from("org", "team6479",  "signin").unwrap().cache_dir().to_path_buf()
-}
-
-pub fn init() {
-    let mut sess_path = cache_dir();
+pub fn init() { // all code in this file may rely on the fact that this function has been executed
+    let mut sess_path = cache::cache_dir();
     sess_path.push(Path::new("sess"));
     fs::create_dir_all(sess_path);
 }
 
-fn append(fname: &str, contents: &str) {
-    let mut fpath = cache_dir();
-    fpath.push(Path::new(fname));
-    let mut file = OpenOptions::new()
-        .append(true)
-        .create(true)
-        .open(&fpath.as_path())
-        .unwrap();
-    writeln!(file, "{}", contents);
-}
+mod cache {
+    use directories::ProjectDirs;
+    use std::fs::OpenOptions;
+    use std::io::prelude::*;
+    use std::io::BufReader;
+    use std::path::{Path, PathBuf};
+    use std::fs;
 
-fn create(fname: &str, contents: &str) {
-    let mut fpath = cache_dir();
-    fpath.push(Path::new(fname));
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open(&fpath.as_path())
-        .unwrap();
-    writeln!(file, "{}", contents);
-}
-
-fn del(fname: &str) {
-    let mut fpath = cache_dir();
-    fpath.push(Path::new(fname));
-    fs::remove_file(&fpath.as_path());
-}
-
-fn clear(fname: &str) {
-    let mut fpath = cache_dir();
-    fpath.push(Path::new(fname));
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open(&fpath.as_path())
-        .unwrap();
-    writeln!(file, "");
-}
-
-fn exists(fname: &str) -> bool {
-    let mut fpath = cache_dir();
-    fpath.push(Path::new(fname));
-    Path::new(&fpath.as_path()).exists()
-}
-
-fn read(fname: &str) -> String {
-    let mut fpath = cache_dir();
-    fpath.push(Path::new(fname));
-    let file = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .open(&fpath.as_path())
-        .unwrap();
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = String::new();
-    buf_reader.read_to_string(&mut contents);
-    contents
+    pub fn cache_dir() -> PathBuf { // all methods here are relative to the cache directory
+        ProjectDirs::from("org", "team6479",  "signin").unwrap().cache_dir().to_path_buf()
+    }
+    
+    pub fn append(fname: &str, contents: &str) {
+        let mut fpath = cache_dir();
+        fpath.push(Path::new(fname));
+        let mut file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&fpath.as_path())
+            .unwrap();
+        writeln!(file, "{}", contents);
+    }
+    
+    pub fn create(fname: &str, contents: &str) {
+        let mut fpath = cache_dir();
+        fpath.push(Path::new(fname));
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&fpath.as_path())
+            .unwrap();
+        writeln!(file, "{}", contents);
+    }
+    
+    pub fn del(fname: &str) {
+        let mut fpath = cache_dir();
+        fpath.push(Path::new(fname));
+        fs::remove_file(&fpath.as_path());
+    }
+    
+    pub fn clear(fname: &str) {
+        let mut fpath = cache_dir();
+        fpath.push(Path::new(fname));
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&fpath.as_path())
+            .unwrap();
+        writeln!(file, "");
+    }
+    
+    pub fn exists(fname: &str) -> bool {
+        let mut fpath = cache_dir();
+        fpath.push(Path::new(fname));
+        Path::new(&fpath.as_path()).exists()
+    }
+    
+    pub fn read(fname: &str) -> String {
+        let mut fpath = cache_dir();
+        fpath.push(Path::new(fname));
+        let file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&fpath.as_path())
+            .unwrap();
+        let mut buf_reader = BufReader::new(file);
+        let mut contents = String::new();
+        buf_reader.read_to_string(&mut contents);
+        contents
+    }
 }
 
 pub struct ApiPostRequest {
@@ -96,6 +101,8 @@ pub trait Cacheable {
 }
 
 pub mod sess {
+    use super::cache;
+
     struct Session {
         id: String,
         start: u64,
@@ -124,20 +131,20 @@ pub mod sess {
     }
 
     pub fn is_signed_in(id: &str) -> bool {
-        super::exists(&format!("sess/active/{}", id))
+        cache::exists(&format!("sess/active/{}", id))
     }
     
     pub fn mk_sess(id: &str, start: u64) {
-        super::create(&format!("sess/active/{}", id), &format!("{}", start));
+        cache::create(&format!("sess/active/{}", id), &format!("{}", start));
     }
     
     pub fn get_sess_start(id: &str) -> u64 {
-        super::read(&format!("sess/active/{}", id)).parse::<u64>().unwrap()
+        cache::read(&format!("sess/active/{}", id)).parse::<u64>().unwrap()
     }
     
     pub fn rm_and_get_sess(id: &str) -> u64 {
         let start = get_sess_start(&id);
-        super::del(&format!("sess/active/{}", id));
+        cache::del(&format!("sess/active/{}", id));
         start
     }
 }

@@ -6,12 +6,11 @@ use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout
 use chrono::offset;
 use std::convert::TryInto;
 
-mod cache;
-use cache::sess;
-use cache::user;
+mod util;
+use util::{sess, user};
 
 fn main() {
-    cache::init();
+    util::init();
 
     let mut tui = Cursive::default();
 
