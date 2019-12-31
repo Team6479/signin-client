@@ -180,7 +180,7 @@ pub mod user {
     use regex::Regex;
     use super::{cache, traits::*};
 
-    struct User {
+    pub struct User {
         pub id: String,
         pub name: String,
         pub lvl: u8, // privilege level, currently unused
@@ -205,7 +205,7 @@ pub mod user {
         fn get_post_req(&self) -> ApiPostRequest {
             ApiPostRequest {
                 endpt: String::from("/put/user"),
-                body: format!("id={}&name={}&lvl={}", self.id, self.name, self.lvl),
+                body: format!("id={}&name={}&lvl={}", self.id, self.name, self.lvl), // lvl currenly unused by server
             }
         }
     }
@@ -213,7 +213,10 @@ pub mod user {
 
     // checks if actions (e.g. signin) can be performed upon a theoretical user with the given ID
     pub fn is_actionable(id: &str) -> bool {
-        validate_id(id)
+        if let Some(_) = get_user(id) {
+            return true;
+        }
+        false
     }
 
     pub enum Creatability {
@@ -221,9 +224,9 @@ pub mod user {
         Privileged, // user can be created, but requires administrative approval due to suspicious parameters
         Impossible, // user cannot be created
     }
-    // checks the creatability of a user (i.e. if the ) based on a requested ID number
-    pub fn is_creatable(id: &str) -> Creatability {
-        if validate_id(id) {
+    // checks the creatability of a user (i.e. if the ) based on a requested User
+    pub fn is_creatable(req: User) -> Creatability {
+        if validate_id(&req.id) {
             Creatability::Unobstructed
         } else {
             Creatability::Privileged
@@ -245,5 +248,33 @@ pub mod user {
         let end_regex = "[0-9]{3}"; // these numbers appear to be random
         let re = Regex::new(&format!("{}{}{}", &grad_yr_regex, &mid_regex, &end_regex)).unwrap();
         re.is_match(id)
+    }
+
+    // this function may assume that the file exists
+    fn get_user_from_file(id: &str, fname: &str) -> Option<User> {
+        // TODO: this code is horribly inefficient and should be rewritten to use proper sorting
+        for ln in cache::read(fname).split("\n") {
+            let user = User::deserialize(&ln);
+            if user.id == id {
+                return Some(user);
+            }
+        }
+        None
+    }
+
+    // for efficiency, there is no user_exists function
+    pub fn get_user(id: &str) -> Option<User> {
+        // there's probably a more efficient way to do this, so look into that sometime
+        if cache::exists("user/server") { // single source of truth subject to change
+            if let Some(user) = get_user_from_file(id, "user/server") {
+                return Some(user);
+            }
+        }
+        if cache::exists("user/local") {
+            if let Some(user) = get_user_from_file(id, "user/server") {
+                return Some(user);
+            }
+        }
+        None
     }
 }
