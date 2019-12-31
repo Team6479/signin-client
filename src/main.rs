@@ -24,7 +24,7 @@ fn main() {
 fn signin_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
             .on_submit(|s, id| {
-                if user::is_actionable(&id) {
+                if let Some(user) = user::get_user(&id) {
                     if sess::is_signed_in(&id) {
                         s.pop_layer();
                         s.add_layer(Dialog::around(TextView::new(format!("Users cannot sign in twice. Sign out?")))
@@ -40,8 +40,7 @@ fn signin_dialog(s: &mut Cursive) {
                         // note: this code will break if the user time travels before the Epoch
                         sess::mk_sess(&id, time::get_time());
                         s.pop_layer();
-                        // TODO: name
-                        s.add_layer(Dialog::around(TextView::new(format!("Welcome, {}", "name")))
+                        s.add_layer(Dialog::around(TextView::new(format!("Welcome, {}", user.name)))
                             .title("Successfully signed in")
                             .button("Ok", |s| {
                                 s.pop_layer();
@@ -64,7 +63,7 @@ fn signin_dialog(s: &mut Cursive) {
 fn signout_dialog(s: &mut Cursive) {
     s.add_layer(Dialog::around(EditView::new()
             .on_submit(|s, id| {
-                if user::is_actionable(&id) {
+                if let Some(user) = user::get_user(&id) {
                     if sess::is_signed_in(&id) {
                         let completed = sess::Session {
                             id: id.to_owned(),
@@ -73,8 +72,7 @@ fn signout_dialog(s: &mut Cursive) {
                         };
                         completed.cache(); // creates and caches a completed session
                         s.pop_layer();
-                        // TODO: name
-                        s.add_layer(Dialog::around(TextView::new(format!("Goodbye, {}\n\nTime elapsed: {}", "name", time::format_time(completed.end - completed.start))))
+                        s.add_layer(Dialog::around(TextView::new(format!("Goodbye, {}\n\nTime elapsed: {}", user.name, time::format_time(completed.end - completed.start))))
                             .title("Successfully signed out")
                             .button("Ok", |s| {
                                 s.pop_layer();
