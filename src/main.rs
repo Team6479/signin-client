@@ -72,8 +72,9 @@ fn signout_dialog(s: &mut Cursive) {
                             end: time::get_time(),
                         };
                         completed.cache(); // creates and caches a completed session
+                        s.pop_layer();
                         // TODO: name
-                        s.add_layer(Dialog::around(TextView::new(format!("Goodbye, {}\n\n{}", "name", (completed.end - completed.start))))
+                        s.add_layer(Dialog::around(TextView::new(format!("Goodbye, {}\n\nTime elapsed: {}", "name", time::format_time(completed.end - completed.start))))
                             .title("Successfully signed out")
                             .button("Ok", |s| {
                                 s.pop_layer();

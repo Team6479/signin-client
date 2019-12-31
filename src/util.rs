@@ -12,11 +12,19 @@ pub fn init() { // all code in this file may rely on the fact that this function
 }
 
 pub mod time {
-    use chrono::offset;
+    use chrono::{offset, NaiveTime};
     use std::convert::TryInto;
 
     pub fn get_time() -> u64 {
         offset::Local::now().timestamp().try_into().unwrap()
+    }
+
+    pub fn format_time(secs: u64) -> String {
+        // note that this code will break if a user is signed in for multiple decades
+        // note that this does not accept a timestamp, but rather a duration
+        // FIXME: this breaks critically for sessions >= 24hrs
+        // a custom algorithm is better suited to this
+        NaiveTime::from_num_seconds_from_midnight(secs.try_into().unwrap(), 0).format("%H:%M:%S").to_string() // 0ns
     }
 }
 
