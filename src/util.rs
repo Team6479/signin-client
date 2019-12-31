@@ -124,8 +124,7 @@ pub mod traits {
 }
 
 pub mod sess {
-    use super::cache;
-    use super::traits::*;
+    use super::{cache, traits::*};
 
     pub struct Session {
         pub id: String,
@@ -179,6 +178,38 @@ pub mod sess {
 pub mod user {
     use chrono::{offset, Datelike};
     use regex::Regex;
+    use super::{cache, traits::*};
+
+    struct User {
+        pub id: String,
+        pub name: String,
+        pub lvl: u8, // privilege level, currently unused
+    }
+    impl Cacheable for User {
+        fn serialize(&self) -> String {
+            format!("{},{},{}", self.id, self.name, self.lvl)
+        }
+        fn deserialize(serialized: &str) -> User { // this MUST receive well-structured data
+            let data: Vec<&str> = serialized.split(",").collect();
+            User {
+                id: data[0].to_owned(),
+                name: data[1].to_owned(),
+                lvl: data[2].parse().unwrap(),
+            }
+        }
+        fn cache(&self) {
+            cache::append("user/local", &self.serialize());
+        }
+    }
+    impl Pushable for User {
+        fn get_post_req(&self) -> ApiPostRequest {
+            ApiPostRequest {
+                endpt: String::from("/put/user"),
+                body: format!("id={}&name={}&lvl={}", self.id, self.name, self.lvl),
+            }
+        }
+    }
+    // TODO: impl Pullable for User
 
     // checks if actions (e.g. signin) can be performed upon a theoretical user with the given ID
     pub fn is_actionable(id: &str) -> bool {
@@ -197,6 +228,7 @@ pub mod user {
         } else {
             Creatability::Privileged
         }
+        // TODO: check for bad chars like ','
     }
 
     // this method is somewhat convoluted; it is commented as best I could, but I recommend using regexr.com and a whiteboard
