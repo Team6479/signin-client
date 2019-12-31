@@ -217,7 +217,7 @@ pub mod user {
         Impossible, // user cannot be created
     }
     // checks the creatability of a user (i.e. if the ) based on a requested User
-    pub fn is_creatable(req: User) -> Creatability {
+    pub fn is_creatable(req: &User) -> Creatability {
         if validate_id(&req.id) {
             Creatability::Unobstructed
         } else {

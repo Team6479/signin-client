@@ -135,15 +135,16 @@ fn newuser_dialog(s: &mut Cursive) {
             let name = s.call_on_id("name", |view: &mut EditView| {
                     view.get_content()
                 }).unwrap();
-            
-            match user::is_creatable(user::User {
+            let req = user::User {
                 id: (&id).to_string(), // yes, I know
                 name: (&name).to_string(), // it works, ok?
                 lvl: 1, // all users are lvl 1 for now
-            }) {
+            };
+            
+            match user::is_creatable(&req) {
                 user::Creatability::Unobstructed => {
                     s.pop_layer();
-                    // TODO: create user
+                    req.cache();
                     s.add_layer(Dialog::around(TextView::new(format!("User \"{}\" with id {} has been created.\nDon't forget to sign in again if desired.", name, id)))
                             .title("Successfully created user")
                             .button("Ok", |s| {
