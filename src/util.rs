@@ -211,14 +211,6 @@ pub mod user {
     }
     // TODO: impl Pullable for User
 
-    // checks if actions (e.g. signin) can be performed upon a theoretical user with the given ID
-    pub fn is_actionable(id: &str) -> bool {
-        if let Some(_) = get_user(id) {
-            return true;
-        }
-        false
-    }
-
     pub enum Creatability {
         Unobstructed, // user can be created according to the normal processes without suspicion
         Privileged, // user can be created, but requires administrative approval due to suspicious parameters
