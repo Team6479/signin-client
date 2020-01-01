@@ -95,7 +95,11 @@ mod cache {
         let mut buf_reader = BufReader::new(file);
         let mut contents = String::new();
         buf_reader.read_to_string(&mut contents);
-        contents
+        contents.trim().to_string()
+    }
+    
+    pub fn log(loc: &str, msg: &str) {
+        append("log", &format!("[{} @ {}] {}", loc, super::time::get_time(), msg));
     }
 }
 
@@ -165,7 +169,7 @@ pub mod sess {
     }
     
     pub fn get_sess_start(id: &str) -> u64 {
-        cache::read(&format!("sess/active/{}", id)).trim().parse::<u64>().unwrap()
+        cache::read(&format!("sess/active/{}", id)).parse::<u64>().unwrap()
     }
     
     pub fn rm_and_get_sess(id: &str) -> u64 {
@@ -220,10 +224,11 @@ pub mod user {
     pub fn is_creatable(req: &User) -> Creatability {
         if validate_id(&req.id) {
             Creatability::Unobstructed
+        } else if req.id.contains(",") || req.name.contains(",") {
+            Creatability::Impossible
         } else {
             Creatability::Privileged
         }
-        // TODO: check for bad chars like ','
     }
 
     // this method is somewhat convoluted; it is commented as best I could, but I recommend using regexr.com and a whiteboard
@@ -263,7 +268,7 @@ pub mod user {
             }
         }
         if cache::exists("user/local") {
-            if let Some(user) = get_user_from_file(id, "user/server") {
+            if let Some(user) = get_user_from_file(id, "user/local") {
                 return Some(user);
             }
         }
