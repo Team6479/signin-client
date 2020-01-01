@@ -11,4 +11,6 @@ cursive = "0.13"
 regex = "1"
 chrono = "0.4"
 directories = "2.0"
-reqwest = "0.9.24"
+rust-argon2 = "0.6"
+rand = "0.7"
+reqwest = { version = "0.10.0", features = ["blocking"] }

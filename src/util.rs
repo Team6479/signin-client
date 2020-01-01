@@ -275,3 +275,56 @@ pub mod user {
         None
     }
 }
+
+pub mod remote {
+    use super::cache;
+    use reqwest;
+    use argon2;
+    use rand::{self, RngCore};
+
+    pub enum InternetStatus {
+        Online,
+        Offline,
+        Portal,
+    }
+
+    pub fn get_status() -> InternetStatus {
+        let client = reqwest::blocking::Client::new();
+        let res = client.post("http://httpbin.org/post") // TODO: the actual server
+            .body("ping")
+            .send();
+        if let Ok(data) = res {
+            if let Ok(text) = data.text() {
+                return if text == "ping" {
+                    InternetStatus::Online
+                } else {
+                    InternetStatus::Portal
+                };
+            }
+        }
+        InternetStatus::Offline
+    }
+
+    pub fn auth(usr: &str, passwd: &str, status: &InternetStatus) -> Result<bool, String> {
+        match status {
+            InternetStatus::Online => {
+                if true { // TODO: verify password with server
+                    let mut salt = [0u8; 16]; // hopefully this doesn't break too much
+                    rand::thread_rng().fill_bytes(&mut salt);
+                    let hash = argon2::hash_encoded(passwd.as_bytes(), &salt, &argon2::Config::default()).unwrap();
+                    cache::create("passwd", &hash);
+                    return Ok(true);
+                }
+                Ok(false)
+            },
+            _ => {
+                if cache::exists("passwd") {
+                    let hash = cache::read("passwd"); // I understand the security implications and will fix this later
+                    Ok(argon2::verify_encoded(&hash, passwd.as_bytes()).unwrap())
+                } else {
+                    Err(String::from("No cached password, internet required"))
+                }
+            },
+        }
+    }
+}

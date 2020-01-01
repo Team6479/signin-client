@@ -4,12 +4,14 @@ use cursive::Cursive;
 use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout};
 
 mod util;
-use util::{time, sess, user, traits::*};
+use util::{time, sess, user, remote, traits::*};
 
 fn main() {
     util::init();
 
     let mut tui = Cursive::default();
+
+    tui.add_global_callback('.', admin_login);
 
     tui.add_layer(Dialog::around(LinearLayout::vertical()
             .child(Button::new("Sign In", signin_dialog))
@@ -166,4 +168,61 @@ fn pt2_newuser_dialog(s: &mut Cursive, id: &str) {
         .button("Cancel", |s| {
             s.pop_layer();
         }));
+}
+
+fn portal_login(s: &mut Cursive) {
+    // TODO: implement this
+    s.add_layer(Dialog::around(TextView::new("This feature is not currenly implemented, but is coming soon.\nSorry for any inconvenience."))
+        .title("Not currently implemented")
+        .button("Ok", |s| {
+            s.pop_layer();
+        }));
+}
+
+fn admin_login(s: &mut Cursive) {
+    let mut status = remote::get_status();
+    match status {
+        remote::InternetStatus::Portal => {
+            s.add_layer(Dialog::around(TextView::new("The internet connection is blocked by a portal."))
+                .title("Portal")
+                .button("Continue offline", |s| {
+                    s.pop_layer();
+                })
+                .button("Login", |s| {
+                    s.pop_layer();
+                    portal_login(s);
+                }));
+                status = remote::get_status();
+        },
+        _ => (),
+    }
+    s.add_layer(Dialog::around(EditView::new()
+            .on_submit(move |s, passwd| {
+                if let Ok(auth) = remote::auth("default", passwd, &status) {
+                    if auth {
+                        admin_zone(s, "default");
+                    } else {
+                        s.add_layer(Dialog::around(TextView::new("Please try again")) // TODO: login attempts
+                            .title("Incorrect password")
+                            .button("Ok", |s| {
+                                s.pop_layer();
+                            }));
+                    }
+                } else {
+                    s.add_layer(Dialog::around(TextView::new("You must login at least once with an internet connection."))
+                        .title("No login cache")
+                        .button("Ok", |s| {
+                            s.pop_layer();
+                            s.pop_layer();
+                        }));
+                }
+            }))
+        .title("Enter your administrator password")
+        .button("Cancel", |s| {
+            s.pop_layer();
+        }));
+}
+
+fn admin_zone(s: &mut Cursive, usr: &str) {
+    // TODO: do something useful
 }
