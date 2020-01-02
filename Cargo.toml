@@ -13,4 +13,4 @@ chrono = "0.4"
 directories = "2.0"
 rust-argon2 = "0.6"
 rand = "0.7"
-reqwest = { version = "0.10.0", features = ["blocking"] }
+reqwest = { version = "0.10.0", features = ["blocking", "json"] }

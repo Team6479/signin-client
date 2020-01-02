@@ -277,10 +277,38 @@ pub mod user {
 }
 
 pub mod remote {
-    use super::cache;
+    use super::{cache, traits::*};
     use reqwest;
     use argon2;
     use rand::{self, RngCore};
+    use std::collections::HashMap;
+
+    fn call(req: ApiPostRequest) -> Option<reqwest::blocking::Response> {
+        let api_root = "https://team6479-signin.herokuapp.com/api";
+        let client = reqwest::blocking::Client::new();
+        let res = client.post(&format!("{}{}", api_root, req.endpt)) // TODO: the actual server
+            .body(req.body)
+            .send();
+        if let Ok(data) = res {
+            Some(data)
+        } else {
+            None
+        }
+    }
+    fn call_text(req: ApiPostRequest) -> Option<String> {
+        if let Some(resp) = call(req) {
+            Some(resp.text().unwrap())
+        } else {
+            None
+        }
+    }
+    fn call_json(req: ApiPostRequest) -> Option<HashMap<String, String>> {
+        if let Some(resp) = call(req) {
+            Some(resp.json().unwrap())
+        } else {
+            None
+        }
+    }
 
     pub enum InternetStatus {
         Online,
@@ -289,20 +317,18 @@ pub mod remote {
     }
 
     pub fn get_status() -> InternetStatus {
-        let client = reqwest::blocking::Client::new();
-        let res = client.post("http://httpbin.org/post") // TODO: the actual server
-            .body("ping")
-            .send();
-        if let Ok(data) = res {
-            if let Ok(text) = data.text() {
-                return if text == "ping" {
-                    InternetStatus::Online
-                } else {
-                    InternetStatus::Portal
-                };
+        if let Some(data) = call_text(ApiPostRequest {
+            endpt: String::from("/ping"),
+            body: String::from("ping"),
+        }) {
+            if data == "ping" {
+                InternetStatus::Online
+            } else {
+                InternetStatus::Portal
             }
+        } else {
+            InternetStatus::Offline
         }
-        InternetStatus::Offline
     }
 
     pub fn auth(usr: &str, passwd: &str, status: &InternetStatus) -> Result<bool, String> {
