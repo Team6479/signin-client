@@ -288,6 +288,8 @@ pub mod remote {
         let client = reqwest::blocking::Client::new();
         let res = client.post(&format!("{}{}", api_root, req.endpt)) // TODO: the actual server
             .body(req.body)
+            .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(reqwest::header::USER_AGENT, "6479-signin")
             .send();
         if let Ok(data) = res {
             Some(data)
@@ -336,7 +338,7 @@ pub mod remote {
             InternetStatus::Online => {
                 if let Some(text) = call_text(ApiPostRequest {
                     endpt: String::from("/key/check"),
-                    body: String::from(passwd),
+                    body: String::from(format!("key={}", passwd)),
                 }) {
                     if text == "true" { // TODO: verify password with server
                         let mut salt = [0u8; 16]; // hopefully this doesn't break too much
