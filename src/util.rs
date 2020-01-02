@@ -11,6 +11,10 @@ pub fn init() { // all code in this file may rely on the fact that this function
     fs::create_dir_all(user_path);
 }
 
+pub fn log(loc: &str, msg: &str) {
+    cache::append("log", &format!("[{} @ {}] {}", loc, super::time::get_time(), msg));
+}
+
 pub mod time {
     use chrono::{offset, NaiveTime};
     use std::convert::TryInto;
@@ -96,10 +100,6 @@ mod cache {
         let mut contents = String::new();
         buf_reader.read_to_string(&mut contents);
         contents.trim().to_string()
-    }
-    
-    pub fn log(loc: &str, msg: &str) {
-        append("log", &format!("[{} @ {}] {}", loc, super::time::get_time(), msg));
     }
 }
 
