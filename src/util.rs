@@ -73,14 +73,8 @@ mod cache {
     }
     
     pub fn clear(fname: &str) {
-        let mut fpath = cache_dir();
-        fpath.push(Path::new(fname));
-        let mut file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .open(&fpath.as_path())
-            .unwrap();
-        writeln!(file, "");
+        del(fname);
+        create(fname, "");
     }
     
     pub fn exists(fname: &str) -> bool {
