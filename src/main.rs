@@ -234,6 +234,12 @@ fn admin_zone(s: &mut Cursive, _usr: &str) {
     s.add_layer(Dialog::around(LinearLayout::vertical()
             .child(Button::new("Create user (bypass checks)", |s| {
                 newuser_dialog(s, true);
+            }))
+            .child(Button::new("Push all", |s| {
+                let mut queue: Vec<Box<dyn Pushable>> = Vec::new();
+                user::push_and_move_local(&mut queue);
+                sess::push_queue(&mut queue);
+                remote::push_many(&queue);
             })))
         .title("Admin Options")
         .button("De-Escalate", |s| {

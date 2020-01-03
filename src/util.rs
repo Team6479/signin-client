@@ -177,6 +177,13 @@ pub mod sess {
         cache::del(&format!("sess/active/{}", id));
         start
     }
+
+    pub fn push_queue(queue: &mut Vec<Box<dyn Pushable>>) {
+        for ln in cache::read("sess/queue").split("\n") {
+            queue.push(Box::new(Session::deserialize(&ln)));
+        }
+        cache::clear("sess/queue"); // clear queue file
+    }
 }
 
 pub mod user {
@@ -274,6 +281,15 @@ pub mod user {
         }
         None
     }
+
+    pub fn push_and_move_local(queue: &mut Vec<Box<dyn Pushable>>) {
+        for ln in cache::read("user/local").split("\n") {
+            let user = User::deserialize(&ln);
+            cache::append("user/server", &user.serialize()); // move from local to server
+            queue.push(Box::new(user));
+        }
+        cache::clear("user/local"); // all users have been moved to server
+    }
 }
 
 pub mod remote {
@@ -352,6 +368,12 @@ pub mod remote {
                     Err(String::from("No cached password, internet required"))
                 }
             },
+        }
+    }
+
+    pub fn push_many(queue: &Vec<Box<dyn Pushable>>) {
+        for item in queue {
+            call(item.get_post_req());
         }
     }
 }
