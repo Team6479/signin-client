@@ -208,7 +208,7 @@ fn admin_login(s: &mut Cursive) {
                 if let Ok(is_correct) = auth {
                     if is_correct {
                         s.pop_layer();
-                        admin_zone(s, "default");
+                        admin_zone(s, "default", &passwd);
                     } else {
                         s.add_layer(Dialog::around(TextView::new("Please try again")) // TODO: login attempts
                             .title("Incorrect password")
@@ -231,16 +231,17 @@ fn admin_login(s: &mut Cursive) {
         }));
 }
 
-fn admin_zone(s: &mut Cursive, _usr: &str) {
+fn admin_zone(s: &mut Cursive, _usr: &str, passwd: &str) {
+    let key = String::from(passwd); // hack for variable lifetimes
     s.add_layer(Dialog::around(LinearLayout::vertical()
             .child(Button::new("Create user (bypass checks)", |s| {
                 newuser_dialog(s, true);
             }))
-            .child(Button::new("Push all", |s| {
+            .child(Button::new("Push all", move |s| {
                 let mut queue: Vec<Box<dyn Pushable>> = Vec::new();
                 user::push_and_move_local(&mut queue);
                 sess::push_queue(&mut queue);
-                remote::push_many(&queue);
+                remote::push_many(&queue, &key);
                 s.add_layer(Dialog::around(TextView::new("New users and completed sessions have been pushed to the server."))
                         .title("Done")
                         .button("Ok", |s| {

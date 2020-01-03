@@ -112,11 +112,11 @@ pub mod traits {
     }
     
     pub trait Pushable {
-        fn get_post_req(&self) -> ApiPostRequest;
+        fn get_post_req(&self, key: &str) -> ApiPostRequest;
     }
     
     pub trait Pullable {
-        fn get_post_req(&self) -> ApiPostRequest;
+        fn get_post_req(&self, key: &str) -> ApiPostRequest;
         fn callback(resp: HashMap<String, String>);
     }
     
@@ -152,10 +152,10 @@ pub mod sess {
         }
     }
     impl Pushable for Session {
-        fn get_post_req(&self) -> ApiPostRequest {
+        fn get_post_req(&self, key: &str) -> ApiPostRequest {
             ApiPostRequest {
                 endpt: String::from("/put/entry"),
-                body: format!("id={}&start={}&end={}", self.id, self.start, self.end),
+                body: format!("id={}&start={}&end={}&key={}", self.id, self.start, self.end, key),
             }
         }
     }
@@ -213,10 +213,10 @@ pub mod user {
         }
     }
     impl Pushable for User {
-        fn get_post_req(&self) -> ApiPostRequest {
+        fn get_post_req(&self, key: &str) -> ApiPostRequest {
             ApiPostRequest {
                 endpt: String::from("/put/user"),
-                body: format!("id={}&name={}&lvl={}", self.id, self.name, self.lvl), // lvl currenly unused by server
+                body: format!("id={}&name={}&lvl={}&key={}", self.id, self.name, self.lvl, key), // lvl currenly unused by server
             }
         }
     }
@@ -371,9 +371,9 @@ pub mod remote {
         }
     }
 
-    pub fn push_many(queue: &Vec<Box<dyn Pushable>>) {
+    pub fn push_many(queue: &Vec<Box<dyn Pushable>>, key: &str) {
         for item in queue {
-            call(item.get_post_req());
+            call(item.get_post_req(key));
         }
     }
 }
