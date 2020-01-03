@@ -237,6 +237,23 @@ fn admin_zone(s: &mut Cursive, _usr: &str, passwd: &str) {
             .child(Button::new("Create user (bypass checks)", |s| {
                 newuser_dialog(s, true);
             }))
+            .child(Button::new("Sign out all", |s| {
+                let mut ct: u16 = 0; // session count
+                for id in sess::get_all_active() {
+                    ct += 1;
+                    let completed = sess::Session {
+                        id: String::from(&id),
+                        start: sess::rm_and_get_sess(&id),
+                        end: time::get_time(),
+                    };
+                    completed.cache(); // creates and caches a completed session
+                }
+                s.add_layer(Dialog::around(TextView::new(format!("{} users have been signed out.", ct)))
+                        .title("Done")
+                        .button("Ok", |s| {
+                            s.pop_layer();
+                        }));
+            }))
             .child(Button::new("Push all", move |s| {
                 let mut queue: Vec<Box<dyn Pushable>> = Vec::new();
                 user::push_and_move_local(&mut queue);
