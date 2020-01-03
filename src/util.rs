@@ -72,11 +72,6 @@ mod cache {
         fs::remove_file(&fpath.as_path());
     }
     
-    pub fn clear(fname: &str) {
-        del(fname);
-        create(fname, "");
-    }
-    
     pub fn exists(fname: &str) -> bool {
         let mut fpath = cache_dir();
         fpath.push(Path::new(fname));
@@ -182,7 +177,7 @@ pub mod sess {
         for ln in cache::read("sess/queue").split("\n") {
             queue.push(Box::new(Session::deserialize(&ln)));
         }
-        cache::clear("sess/queue"); // clear queue file
+        cache::del("sess/queue"); // clear queue file
     }
 
     pub fn get_all_active() -> Vec<String> {
@@ -296,7 +291,7 @@ pub mod user {
             cache::append("user/server", &user.serialize()); // move from local to server
             queue.push(Box::new(user));
         }
-        cache::clear("user/local"); // all users have been moved to server
+        cache::del("user/local"); // all users have been moved to server
     }
 }
 
