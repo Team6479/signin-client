@@ -54,7 +54,7 @@ fn signin_dialog(s: &mut Cursive) {
                         })
                         .button("Yes", |s| {
                             s.pop_layer();
-                            newuser_dialog(s);
+                            newuser_dialog(s, false);
                         }));
                 }
             }))
@@ -102,7 +102,7 @@ fn signout_dialog(s: &mut Cursive) {
                         })
                         .button("Yes", |s| {
                             s.pop_layer();
-                            newuser_dialog(s);
+                            newuser_dialog(s, false);
                             signin_dialog(s);
                         }));
                 }
@@ -113,18 +113,18 @@ fn signout_dialog(s: &mut Cursive) {
         }));
 }
 
-fn newuser_dialog(s: &mut Cursive) {
+fn newuser_dialog(s: &mut Cursive, escalated: bool) {
     s.add_layer(Dialog::around(EditView::new() // id
-            .on_submit(|s, id| {
+            .on_submit(move |s, id| {
                 s.pop_layer();
-                pt2_newuser_dialog(s, &id);
+                pt2_newuser_dialog(s, &id, escalated);
             }))
         .title("Enter or scan your ID.")
         .button("Cancel", |s| {
             s.pop_layer();
         }));
 }
-fn pt2_newuser_dialog(s: &mut Cursive, id: &str) {
+fn pt2_newuser_dialog(s: &mut Cursive, id: &str, escalated: bool) {
     let id = id.clone().to_owned();
     s.add_layer(Dialog::around(EditView::new() // name
             .on_submit(move |s, name| {
@@ -145,11 +145,21 @@ fn pt2_newuser_dialog(s: &mut Cursive, id: &str) {
                                 }));
                     },
                     user::Creatability::Privileged => {
-                        s.add_layer(Dialog::around(TextView::new("This doesn't look like a valid CdS ID.\nIf this is your ID, talk to an officer for help."))
+                        if escalated {
+                            s.pop_layer();
+                            req.cache();
+                            s.add_layer(Dialog::around(TextView::new(format!("ID validation checks bypassed, {} created", id)))
+                                .title("Successfully created user")
+                                .button("Ok", |s| {
+                                    s.pop_layer();
+                                }));
+                        } else {
+                            s.add_layer(Dialog::around(TextView::new("This doesn't look like a valid CdS ID.\nIf this is your ID, talk to an officer for help."))
                                 .title("Invalid format")
                                 .button("Ok", |s| {
                                     s.pop_layer();
                                 }));
+                        }
                     },
                     user::Creatability::Impossible => {
                         s.add_layer(Dialog::around(TextView::new("The format of your ID and/or name is not allowed.\nGenerally, this is due to commas.\nPlease fix and re-enter, or talk to an officer for help."))
@@ -221,5 +231,12 @@ fn admin_login(s: &mut Cursive) {
 }
 
 fn admin_zone(s: &mut Cursive, usr: &str) {
-    // TODO: do something useful
+    s.add_layer(Dialog::around(LinearLayout::vertical()
+            .child(Button::new("Create user (bypass checks)", |s| {
+                newuser_dialog(s, true);
+            })))
+        .title("Admin Options")
+        .button("De-Escalate", |s| {
+            s.pop_layer();
+        }));
 }
