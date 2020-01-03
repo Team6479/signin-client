@@ -286,12 +286,14 @@ pub mod user {
     }
 
     pub fn push_and_move_local(queue: &mut Vec<Box<dyn Pushable>>) {
-        for ln in cache::read("user/local").split("\n") {
-            let user = User::deserialize(&ln);
-            cache::append("user/server", &user.serialize()); // move from local to server
-            queue.push(Box::new(user));
+        if cache::exists("user/local") {
+            for ln in cache::read("user/local").split("\n") {
+                let user = User::deserialize(&ln);
+                cache::append("user/server", &user.serialize()); // move from local to server
+                queue.push(Box::new(user));
+            }
+            cache::del("user/local"); // all users have been moved to server
         }
-        cache::del("user/local"); // all users have been moved to server
     }
 }
 
