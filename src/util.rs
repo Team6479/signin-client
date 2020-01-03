@@ -281,7 +281,6 @@ pub mod remote {
     use reqwest;
     use argon2;
     use rand::{self, RngCore};
-    use std::collections::HashMap;
 
     fn call(req: ApiPostRequest) -> Option<reqwest::blocking::Response> {
         let api_root = "https://team6479-signin.herokuapp.com/api";
@@ -300,13 +299,6 @@ pub mod remote {
     fn call_text(req: ApiPostRequest) -> Option<String> {
         if let Some(resp) = call(req) {
             Some(resp.text().unwrap())
-        } else {
-            None
-        }
-    }
-    fn call_json(req: ApiPostRequest) -> Option<HashMap<String, String>> {
-        if let Some(resp) = call(req) {
-            Some(resp.json().unwrap())
         } else {
             None
         }
