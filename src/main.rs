@@ -207,6 +207,7 @@ fn admin_login(s: &mut Cursive) {
                 let auth = remote::auth("default", passwd, &status);
                 if let Ok(is_correct) = auth {
                     if is_correct {
+                        s.pop_layer();
                         admin_zone(s, "default");
                     } else {
                         s.add_layer(Dialog::around(TextView::new("Please try again")) // TODO: login attempts
