@@ -230,7 +230,7 @@ fn admin_login(s: &mut Cursive) {
         }));
 }
 
-fn admin_zone(s: &mut Cursive, usr: &str) {
+fn admin_zone(s: &mut Cursive, _usr: &str) {
     s.add_layer(Dialog::around(LinearLayout::vertical()
             .child(Button::new("Create user (bypass checks)", |s| {
                 newuser_dialog(s, true);

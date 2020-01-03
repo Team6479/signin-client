@@ -333,7 +333,7 @@ pub mod remote {
         }
     }
 
-    pub fn auth(usr: &str, passwd: &str, status: &InternetStatus) -> Result<bool, String> {
+    pub fn auth(_usr: &str, passwd: &str, status: &InternetStatus) -> Result<bool, String> {
         match status {
             InternetStatus::Online => {
                 if let Some(text) = call_text(ApiPostRequest {
