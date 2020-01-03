@@ -240,6 +240,11 @@ fn admin_zone(s: &mut Cursive, _usr: &str) {
                 user::push_and_move_local(&mut queue);
                 sess::push_queue(&mut queue);
                 remote::push_many(&queue);
+                s.add_layer(Dialog::around(TextView::new("New users and completed sessions have been pushed to the server."))
+                        .title("Done")
+                        .button("Ok", |s| {
+                            s.pop_layer();
+                        }));
             })))
         .title("Admin Options")
         .button("De-Escalate", |s| {
