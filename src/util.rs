@@ -101,6 +101,12 @@ mod cache {
         buf_reader.read_to_string(&mut contents);
         contents.trim().to_string()
     }
+
+    pub fn ls(dname: &str) -> fs::ReadDir {
+        let mut dpath = cache_dir();
+        dpath.push(Path::new(dname));
+        fs::read_dir(dpath).unwrap()
+    }
 }
 
 pub mod traits {
@@ -183,6 +189,14 @@ pub mod sess {
             queue.push(Box::new(Session::deserialize(&ln)));
         }
         cache::clear("sess/queue"); // clear queue file
+    }
+
+    pub fn get_all_active() -> Vec<String> {
+        let mut active: Vec<String> = Vec::new();
+        for f in cache::ls("sess/active") {
+            active.push(String::from(f.unwrap().path().file_name().unwrap().to_str().unwrap()));
+        }
+        active
     }
 }
 
