@@ -1,7 +1,7 @@
 #![allow(unused_must_use)]
 
 use cursive::Cursive;
-use cursive::views::{Dialog, TextView, EditView, DummyView, Button, LinearLayout};
+use cursive::views::{Dialog, TextView, EditView, Button, LinearLayout};
 
 mod util;
 use util::{time, sess, user, remote, traits::*};
@@ -15,11 +15,7 @@ fn main() {
 
     tui.add_layer(Dialog::around(LinearLayout::vertical()
             .child(Button::new("Sign In", signin_dialog))
-            .child(Button::new("Sign Out", signout_dialog))
-            .child(DummyView)
-            .child(Button::new("Create User", newuser_dialog))
-            .child(DummyView)
-            .child(Button::new("Admin", |s| s.quit())))
+            .child(Button::new("Sign Out", signout_dialog)))
         .title("Options"));
     
     tui.run();
