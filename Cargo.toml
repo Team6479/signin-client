@@ -1,0 +1,16 @@
+[package]
+name = "signin-client"
+version = "0.1.0"
+authors = ["Leo Wilson <leo@leomwilson.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cursive = "0.13"
+regex = "1"
+chrono = "0.4"
+directories = "2.0"
+rust-argon2 = "0.6"
+rand = "0.7"
+reqwest = { version = "0.10.0", features = ["blocking", "json"] }
