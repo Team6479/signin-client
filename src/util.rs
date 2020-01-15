@@ -254,7 +254,7 @@ pub mod user {
         let mid_regex = "[0-9]{3}"; // TODO: figure out what's valid here (I've been told that it's usually 400)
         let end_regex = "[0-9]{3}"; // these numbers appear to be random
         let re = Regex::new(&format!("{}{}{}", &grad_yr_regex, &mid_regex, &end_regex)).unwrap();
-        re.is_match(id)
+        re.is_match(id) && id.len() == 8
     }
 
     // this function may assume that the file exists
