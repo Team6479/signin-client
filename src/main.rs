@@ -255,15 +255,26 @@ fn admin_zone(s: &mut Cursive, _usr: &str, passwd: &str) {
                         }));
             }))
             .child(Button::new("Push all", move |s| {
-                let mut queue: Vec<Box<dyn Pushable>> = Vec::new();
-                user::push_and_move_local(&mut queue);
-                sess::push_queue(&mut queue);
-                remote::push_many(&queue, &key);
-                s.add_layer(Dialog::around(TextView::new("New users and completed sessions have been pushed to the server."))
-                        .title("Done")
-                        .button("Ok", |s| {
-                            s.pop_layer();
-                        }));
+                match remote::get_status() {
+                    remote::InternetStatus::Online => {
+                        let mut queue: Vec<Box<dyn Pushable>> = Vec::new();
+                        user::push_and_move_local(&mut queue);
+                        sess::push_queue(&mut queue);
+                        remote::push_many(&queue, &key);
+                        s.add_layer(Dialog::around(TextView::new("New users and completed sessions have been pushed to the server."))
+                                .title("Done")
+                                .button("Ok", |s| {
+                                    s.pop_layer();
+                                }));
+                    },
+                    _ => {
+                        s.add_layer(Dialog::around(TextView::new("Please connect to the internet to push."))
+                                .title("No connection")
+                                .button("Ok", |s| {
+                                    s.pop_layer();
+                                }));
+                    }
+                }
             })))
         .title("Admin Options")
         .button("De-Escalate", |s| {
