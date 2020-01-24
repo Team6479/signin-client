@@ -273,7 +273,7 @@ fn admin_zone(s: &mut Cursive, _usr: &str, passwd: &str) {
                                 .button("Ok", |s| {
                                     s.pop_layer();
                                 }));
-                    }
+                    },
                 }
             })))
         .title("Admin Options")
