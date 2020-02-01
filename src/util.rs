@@ -24,11 +24,11 @@ pub mod time {
     }
 
     pub fn format_time(secs: u64) -> String {
-        // note that this code will break if a user is signed in for multiple decades
-        // note that this does not accept a timestamp, but rather a duration
-        // FIXME: this breaks critically for sessions >= 24hrs
-        // a custom algorithm is better suited to this
-        NaiveTime::from_num_seconds_from_midnight(secs.try_into().unwrap(), 0).format("%H:%M:%S").to_string() // 0ns
+        let hours = secs / 3600; // secs per hr
+        let remainder = secs % 3600; // remainder after taking out hours
+        let minutes = rem / 60; // secs per min
+        let seconds = rem % 60;
+        format!("{}:{}:{}", hours, minutes, seconds)
     }
 }
 
